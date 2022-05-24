@@ -1,15 +1,41 @@
-from typing import TypeVar, List
-# from typeguard import typechecked
-from pytypes import typechecked
+from tensorguard.types import TensorShape, Tensor
+from typeguard import typechecked
 
-T = TypeVar('T')
+# tests:
+a = Tensor([10, 4, 3], 'float32', 'cpu', 'torch')
+b = Tensor([5, 4, 3], 'float32', 'cpu', 'torch')
+c = Tensor([10, 4, 3], 'uint8', 'cpu', 'torch')
+d = Tensor([10, 4, 3], 'float32', 'cuda', 'torch')
+e = Tensor([10, 4, 3], 'float32', 'cpu', 'numpy')
 
-@typechecked
-def meth(a: List[T], b: T) -> T:
-    return a
+f = Tensor(None, 'float32', 'cpu', 'torch')
+g = Tensor([10, 4, 3], None, 'cpu', 'torch')
+h = Tensor([10, 4, 3], 'float32', None, 'torch')
+i = Tensor([10, 4, 3], 'float32', 'cpu', None)
 
-if __name__ == '__main__':
-    # meth('a', 'b')
-    # meth(['a'], 'a')
-    # meth(['a', 1], 'a')
-    print([T, 1, 23, 4])
+def test_two(a, b, expected, name):
+    print(name)
+    expected = set(expected)
+    diff = a.diff(b)
+    assert diff == expected, (diff, expected)
+    print(a.rep_diff(b, set()))
+    print('*' * 40)
+    print(b.rep_diff(a, set()))
+    print('-' * 80)
+
+# diff shape
+# diff device
+# diff dtype
+# diff library
+test_two(a, b, ['shape'], 'shape diff')
+test_two(a, c, ['dtype'], 'dtype diff')
+test_two(a, d, ['device'], 'device diff')
+test_two(a, e, ['library'], 'library diff')
+
+test_two(a, f, [], 'generic diff')
+test_two(a, g, [], 'generic diff')
+test_two(a, h, [], 'generic diff')
+test_two(a, i, [], 'generic diff')
+# generics
+# printing
+print(Tensor([10, 4, 'bs'], 'float32', 'cpu', None))
