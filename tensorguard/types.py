@@ -21,9 +21,6 @@ DTYPES = [
     ('float32', ch.float32, np.float32),
     ('float64', ch.float64, np.float64),
     ('uint8', ch.uint8, np.uint8),
-    ('uint16', ch.uint16, np.uint16),
-    ('uint32', ch.uint32, np.uint32),
-    ('uint64', ch.uint64, np.uint64),
     ('int8', ch.int8, np.int8),
     ('int16', ch.int16, np.int16),
     ('int32', ch.int32, np.int32),
@@ -33,28 +30,35 @@ DTYPES = [
 NAMES = {
     'long':'int64',
     'int':'int64',
-    'half':'float16',
-    'float':'float32'
+    'half':'float16'
 }
 
 NAMES, CH_TYPES, NP_TYPES = zip(*DTYPES)
 
-class Dtype:
+class DType:
     def __init__(self, dtype):
         assert dtype in CH_TYPES
         self.dtype = dtype
 
-    def __repr__():
-        return 
+    def __repr__(self):
+        return str(self.dtype).replace('torch.', '')
 
     @classmethod
-    def make()
+    def make(cls, name):
+        if name in NAMES:
+            name = NAMES[name]
+        
+        for str_name, ch_name, np_name in DTYPES:
+            if name == str_name or name == ch_name or name == np_name:
+                return cls(dtype=ch_name)
+
+        raise ValueError(f'{name} not a supported type!')
 
 
 class Tensor:
     def __init__(self, shape=None, dtype=None, device=None, library=None):
         self.shape = TensorShape(shape) if shape is not None else shape
-        self.dtype = dtype
+        self.dtype = DType.make(dtype)
 
         assert self.device in ['cuda', 'cpu', None]
         self.device = device
