@@ -21,12 +21,14 @@ def error_msg(argnames, generics, hints, realized, conversion_errors,
               ret_hint=None, ret_realized=None):
     ret_issue = ret_hint is not None
     args_issue = not ret_issue or not _generics_ok(generics)
+
     msg = []
     args_emsg = args_error_msg(argnames, generics, hints, realized, conversion_errors)
     msg.append(bolder('\n'))
     msg.append(args_emsg)
-    msg.append(bolder('\n\n'))
-    msg.append(return_error_msg(generics, conversion_errors, ret_hint, ret_realized))
+    if not args_issue:
+        msg.append(bolder('\n\n'))
+        msg.append(return_error_msg(generics, conversion_errors, ret_hint, ret_realized))
 
     msg = ''.join(msg)
     return msg
