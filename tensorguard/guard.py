@@ -15,22 +15,18 @@ class TensorMismatchError(Exception):
 from .types import _BAD_GENERIC, Tensor
 
 bolder = partial(colored, attrs=['bold'])
+underliner = partial(colored, attrs=['underline'])
 
 def error_msg(argnames, generics, hints, realized, conversion_errors,
               ret_hint=None, ret_realized=None):
     ret_issue = ret_hint is not None
     args_issue = not ret_issue or not _generics_ok(generics)
     msg = []
-    if args_issue:
-        args_emsg = args_error_msg(argnames, generics, hints, realized, conversion_errors)
-        msg.append(bolder('argument type mismatches:\n'))
-        msg.append(args_emsg)
-        if ret_issue:
-            msg.append('\n\n')
-
-    if ret_issue:
-        msg.append(bolder('return type mismatches:\n'))
-        msg.append(return_error_msg(generics, conversion_errors, ret_hint, ret_realized))
+    args_emsg = args_error_msg(argnames, generics, hints, realized, conversion_errors)
+    msg.append(bolder('\n'))
+    msg.append(args_emsg)
+    msg.append(bolder('\n\n'))
+    msg.append(return_error_msg(generics, conversion_errors, ret_hint, ret_realized))
 
     msg = ''.join(msg)
     return msg
@@ -46,17 +42,17 @@ def _error_msg(argnames, generics, hints, realized, conversion_errors, name):
     value_messages = []
     hint_messages = []
     bad_generics = _bad_generics(generics)
-    for expected, actual, name in zip(hints, realized, argnames):
+    for expected, actual, tname in zip(hints, realized, argnames):
         hint_message = maybe_message(expected, actual, bad_generics)
         value_message = maybe_message(actual, expected, bad_generics)
-        value_messages.append(f'{name}: {value_message}')
-        hint_messages.append(f'{name}: {hint_message}')
+        value_messages.append(f'{underliner(tname)}: {(value_message)}')
+        hint_messages.append(f'{underliner(tname)}: {(hint_message)}')
 
     expected_line = ', '.join(hint_messages)
     actual_line = ', '.join(value_messages)
     errors = [f'- {k} ({v}): \'{ems}\'' for k, (v, ems) in conversion_errors.items()]
-    conv = bolder('Type inference errors:\n') + '\n'.join(errors)
-    retval = f'Expected signature: {expected_line}\nSaw signature: {actual_line}{conv}'
+    conv = bolder('Type inference errors:\n') + '\n'.join(errors) if errors else ''
+    retval = f'{bolder(f"Expected {name}")}: {expected_line}\n{bolder(f"Realized {name}")}: {actual_line}{conv}'
     return retval
 
 def args_error_msg(argnames, generics, hints, realized, conversion_errors):
@@ -105,7 +101,8 @@ def add_generics(expected_type, value_type, generics):
     realized = value_type.props.values() 
 
     for ve, vr in zip(expected, realized):
-        vr.add_generics(ve, generics)
+        if ve is not None:
+            vr.add_generics(ve, generics)
 
 def _bad_generics(generics):
     return {k for k, s in generics.items() if _is_bad_generic(s)}
@@ -120,7 +117,8 @@ def check_types(expected_type, value_type):
 
     is_ok = True
     for ve, vr in zip(expected, realized):
-        is_ok = is_ok and vr.type_matches(ve)
+        if ve is not None:
+            is_ok = is_ok and vr.type_matches(ve)
 
     return is_ok
 
@@ -194,6 +192,9 @@ def check_return_type(retval, memo, conversion_errors, generics) -> bool:
                                                 conversion_errors, generics)
         else:
             value_type = type(retval)
+    else:
+        hint = None
+        value_type = None
 
     processed = (hint, value_type)
     return is_ok, processed

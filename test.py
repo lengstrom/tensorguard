@@ -50,12 +50,14 @@ t2 = ch.randn(2, 2, 3, 4).to(dtype=ch.float32)
 t3 = ch.randn(1, 2, 3, 4).to(dtype=ch.float64)
 f1(t1)
 def check_bad(f, t):
+    if not isinstance(t, tuple):
+        t = (t,)
     bad = True
     try:
-        f(t)
-    except ValueError as e:
+        f(*t)
+    except Exception as e:
         bad = False
-        print('no error; msg', e)
+        print('no error; msg\n', e)
     if bad:
         raise ValueError(f'no error for {f}, {t}')
 check_bad(f1, t2)
@@ -69,8 +71,15 @@ f2(t1)
 f2(t2)
 
 @tensorguard
-def f2(a: Tensor([None, 2, 3, 4], 'float32', 'cpu'), b) -> Tensor([]):
-    return b
+def f2(a: Tensor(['a', 'a', 3, 4], 'float32', 'cpu'), b: Tensor(['a', 'a', 1, 2])) -> Tensor([]):
+    return b[0][0][0]
+
+t1 = ch.randn(4, 4, 3, 4).to(dtype=ch.float32)
+t2 = ch.randn(4, 4, 1, 2).to(dtype=ch.float32)
+t3 = ch.randn(5, 4, 3, 4).to(dtype=ch.float32)
+
+f2(t1, t2)
+check_bad(f2, (t3, t2))
 
 # generics
 # printing
