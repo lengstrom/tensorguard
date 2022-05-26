@@ -72,13 +72,15 @@ f2(t2)
 
 @tensorguard
 def f2(a: Tensor(['a', 'a', 3, 4], 'float32', 'cpu'), b: Tensor(['a', 'a', 1, 2])) -> Tensor([]):
-    return b[0][0][0]
+    return b[0, 0, 0]
 
 t1 = ch.randn(4, 4, 3, 4).to(dtype=ch.float32)
 t2 = ch.randn(4, 4, 1, 2).to(dtype=ch.float32)
 t3 = ch.randn(5, 4, 3, 4).to(dtype=ch.float32)
 
+# this fails because we cant detect scalars??
 f2(t1, t2)
+# this fails because of bad generics detection
 check_bad(f2, (t3, t2))
 
 # generics
