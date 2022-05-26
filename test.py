@@ -1,5 +1,6 @@
 from tensorguard.types import TensorShape, Tensor
-from typeguard import typechecked
+import torch as ch
+from tensorguard.guard import tensorguard
 
 # tests:
 a = Tensor([10, 4, 3], 'float32', 'cpu', 'torch')
@@ -12,6 +13,9 @@ f = Tensor(None, 'float32', 'cpu', 'torch')
 g = Tensor([10, 4, 3], None, 'cpu', 'torch')
 h = Tensor([10, 4, 3], 'float32', None, 'torch')
 i = Tensor([10, 4, 3], 'float32', 'cpu', None)
+
+print(Tensor(['bs', 1, 'sl', 'sl'], 'float32', 'cpu', None))
+print(Tensor(['bs', 1, 'sl', 'sl'], 'float32', 'dev2', None))
 
 def test_two(a, b, expected, name):
     print(name)
@@ -36,6 +40,45 @@ test_two(a, f, [], 'generic diff')
 test_two(a, g, [], 'generic diff')
 test_two(a, h, [], 'generic diff')
 test_two(a, i, [], 'generic diff')
+
+@tensorguard
+def f1(a: Tensor([1, 2, 3, 4], 'float32', 'cpu')):
+    return 1
+
+t1 = ch.randn(1, 2, 3, 4).to(dtype=ch.float32)
+t2 = ch.randn(2, 2, 3, 4).to(dtype=ch.float32)
+t3 = ch.randn(1, 2, 3, 4).to(dtype=ch.float64)
+f1(t1)
+def check_bad(f, t):
+    bad = True
+    try:
+        f(t)
+    except ValueError as e:
+        bad = False
+        print('no error; msg', e)
+    if bad:
+        raise ValueError(f'no error for {f}, {t}')
+check_bad(f1, t2)
+check_bad(f1, t3)
+
+@tensorguard
+def f2(a: Tensor([None, 2, 3, 4], 'float32', 'cpu')):
+    return 1
+
+f2(t1)
+f2(t2)
+
+@tensorguard
+def f2(a: Tensor([None, 2, 3, 4], 'float32', 'cpu'), b) -> Tensor([]):
+    return b
+
 # generics
 # printing
-print(Tensor([10, 4, 'bs'], 'float32', 'cpu', None))
+# print(Tensor([10, 4, 3], 'float32', 'cpu', None))
+
+# @typechecked
+# def a(b:int, c:str):
+#     return b
+
+# a(1, 'str')
+# a(1, 2)

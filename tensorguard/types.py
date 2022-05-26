@@ -1,4 +1,3 @@
-from multiprocessing.sharedctypes import Value
 from typing import TypeVar
 import torch as ch
 import numpy as np
@@ -29,7 +28,7 @@ highlight_text = partial(colored, on_color='on_red', attrs=['underline', 'bold']
 def field_ok(a, b, bad_set=set()):
     eq = a == b 
     generic_eq = (type(a) == TypeVar) ^ (type(b) == TypeVar)
-    none_eq = a is None or b is None
+    none_eq = a is None or b is None # this means that one of them is wildcard
 
     either_bad = (a in bad_set or b in bad_set)
     return (eq or generic_eq or none_eq) and not either_bad
@@ -47,6 +46,9 @@ class TensorTypeBase:
     def rep_diff(self, a, bad_typevars: set):
         raise NotImplementedError()
 
+    def get_generics(self, base):
+        raise NotImplementedError()
+
 class TensorTypeScalar(TensorTypeBase):
     def __init__(self, value):
         self.value = value
@@ -61,14 +63,22 @@ class TensorTypeScalar(TensorTypeBase):
 
         return rep
 
+    def add_generics(self, base, generics):
+        assert not isinstance(self.value, TypeVar)
+        if isinstance(base.value, TypeVar):
+            generics[base.value.__name__].add(self.value)
+
+_BAD_GENERIC = '__bad_generic'
+
 class TensorShape(TensorTypeBase):
     def __init__(self, shape):
         assert shape is not None
-        _acceptable_types = [int, TypeVar]
-        shape = [(int(k) if type(k) is str else k) for k in shape]
+        _acceptable_types = [int, TypeVar, type(None)]
+        shape = [(TypeVar(k) if type(k) is str else k) for k in shape]
         for k in shape:
-            msg = f'Dimension {k} ({type(k)}) should be a int, str, or TypeVar'
-            assert type(k) in _acceptable_types, msg
+            msg = f'Dimension {k} ({type(k)}) should be a positive int, str, or TypeVar'
+            pos = type(k) is not int or k > 0
+            assert type(k) in _acceptable_types and pos, msg
 
         self.shape = shape
 
@@ -81,11 +91,22 @@ class TensorShape(TensorTypeBase):
 
         return all(field_ok(a, b) for a, b in zip(a.shape, self.shape))
 
+    def add_generics(self, other, generics):
+        for i, other_type in enumerate(other.shape):
+            if isinstance(other_type, TypeVar):
+                if i < len(self.shape):
+                    v = self.shape[i]
+                    assert not isinstance(v, TypeVar)
+                else:
+                    v = _BAD_GENERIC
+
+                generics[other_type].add(v)
+
     def rep_diff(self, a, bad_typevars: set):
         # get rep for diff between this and a, given which typevars are bad
         # if totally diff just highlight the whole thing
         if len(a.shape) != len(self.shape):
-            return False, highlight_text(self.__repr__())
+            return highlight_text(self.__repr__())
 
         rep = []
         for v1, v2 in zip(self.shape, a.shape):
@@ -97,14 +118,49 @@ class TensorShape(TensorTypeBase):
 
         return '[' + ', '.join(rep) + ']'
 
+def _is_cuda_device(device):
+    try:
+        device, num = device.split(':')
+        ch.device(type=device, index=int(num))
+    except:
+        return False
+
+    assert device == 'cuda'
+    return True
+
+def _convert_generic(device):
+    if type(device) == str and len(device) == 4 and device[0] == 'd':
+        return TypeVar(device)
+
+    return device
+
 class Device(TensorTypeScalar):
     def __init__(self, device):
-        msg = f'{device} is not a supported type!'
-        assert device in ['cuda', 'cpu'], msg
+        device = _convert_generic(device)
+        is_cuda =  _is_cuda_device(device)
+        is_generic = isinstance(device, TypeVar)
+        msg = f'Device {device} not supported! Must be cpu, cuda:k, or a generic'
+        assert device in ['cuda', 'cpu'] or is_cuda or is_generic, msg
+
+        if device == 'cuda':
+            device = 'cuda:0'
+
         super().__init__(device)
 
     def __repr__(self):
         return str(self.value)
+
+    @classmethod
+    def make(cls, device):
+        if ch.isinstance(device, ch.device):
+            if device.type == 'cuda':
+                device = f'{device.type}:{device.index}'
+            elif device.type == 'cpu':
+                device = 'cpu'
+            else:
+                raise ValueError(f'{device} not supported, only cpu and cuda!')
+
+        return cls(device)
 
 class Library(TensorTypeScalar):
     def __init__(self, library):
@@ -152,7 +208,22 @@ class Tensor:
 
     @classmethod
     def from_tensor(cls, v):
-        raise NotImplementedError()
+        dtype = v.dtype
+        if ch.is_tensor(v):
+            # make from a torch tensor
+            shape = list(map(int, v.shape))
+            library = 'torch'
+            device = v.device.type
+        elif isinstance(v, np.ndarray):
+            # make from a numpy array
+            shape = list(map(int, v.size))
+            library = 'numpy'
+            device = 'cpu'
+        else:
+            raise ValueError(f'{v} is not a tensor type!')
+
+        return Tensor(shape=shape, dtype=dtype, device=device, library=library)
+
 
     def diff(self, a):
         # calculates type differences between this tensortype and another
@@ -175,6 +246,9 @@ class Tensor:
 
     def rep_diff(self, a, bad_typevars):
         # make a string rep for the diff
+        if not isinstance(a, Tensor):
+            return highlight_text(str(self))
+
         d = {}
         for k, v in self.props.items():
             if v is not None:
@@ -194,8 +268,9 @@ class Tensor:
             'device':self.device,
             'library':self.library
         }
+        print(self.library)
 
-        d = {k:str(v) for k, v in rep.items()}
+        d = {k:str(v) for k, v in rep.items() if v is not None}
         return Tensor.rep_func(d)
 
     @staticmethod
@@ -205,7 +280,8 @@ class Tensor:
         ls = [str(rep[v]) for v in names if v in rep]
         filt = [v for v in ls if v is not None]
         spec = ', '.join(filt)
-        library = 'Tensor' if not 'library' in rep else rep['library']
+        any_lib = not 'library' in rep or rep['library'] is None
+        library = 'Tensor' if any_lib else rep['library']
         return f'{library}({spec})'
 
 # two kinds of comparisons:
