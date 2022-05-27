@@ -12,10 +12,28 @@ Pretty runtime typechecking for PyTorch and Numpy tensors!
 	pip install -e tensorguard
 
 ### Example usage
-<p align = 'center'>
-<img src = 'static/example.png'>
-</p>
+As a decorator:
+```python
+from tensorguard import tensorguard, Tensor as T
+import torch as ch
 
+@tensorguard
+def inference(x: T(['bs', 3, 224, 224], 'float16'), y: T(['bs', 'int64'])):
+    pass
+
+# make examples with wrong dtype
+x = ch.ones(128, 3, 224, 224, dtype=ch.float32)
+# make labels with wrong batch size
+y = ch.ones(256)
+
+inference(x, y)
+```
+
+As a standalone assertion:
+```python
+from tensorguard import tensorcheck
+tensorcheck(
+```
 
 ### Citation
 
