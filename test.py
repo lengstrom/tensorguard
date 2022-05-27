@@ -1,6 +1,20 @@
-from tensorguard.types import TensorShape, Tensor
 import torch as ch
+from tensorguard.types import Tensor as T
 from tensorguard.guard import tensorguard
+
+@tensorguard
+def inference(x: T(['bs', 3, 224, 224], 'float16'), y: T(['bs', 'int64'])):
+    pass
+
+# make examples with wrong dtype
+x = ch.ones(128, 3, 224, 224, dtype=ch.float32)
+# make labels with wrong batch size
+y = ch.ones(256)
+
+inference(x, y)
+
+
+
 
 def check_bad(f, t):
     if not isinstance(t, tuple):
@@ -80,12 +94,26 @@ t1 = ch.randn(4, 4, 3, 4).to(dtype=ch.float32)
 t2 = ch.randn(4, 4, 1, 2).to(dtype=ch.float32)
 t3 = ch.randn(5, 4, 3, 4).to(dtype=ch.float16)
 
+
+@tensorguard
+def inference(x: T(['bs', 3, 224, 224], 'float16'), y: T(['bs', 'int64'])):
+    pass
+
+# make examples with wrong dtype
+x = ch.ones(128, 3, 224, 224, dtype=ch.float32)
+# make labels with wrong batch size
+y = ch.ones(256)
+
+inference(x, y)
+
+#inference()
+
 # this fails because we cant detect scalars??
 # f2(t1, t2)
 # this fails because of bad generics detection
 # check_bad(f2, (t3, t2))
 
-f2(t3, t2)
+#f2(t3, t2)
 
 # generics
 # printing
