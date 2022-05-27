@@ -3,7 +3,6 @@ from termcolor import colored
 from collections import defaultdict
 from tensorguard.types import Tensor
 from typeguard import _CallMemo
-
 class TensorMismatchError(Exception):
     pass
 
@@ -63,6 +62,38 @@ def return_error_msg(generics, conversion_errors, ret_hint, ret_realized):
 # format:
 # - most errors: shown during expected vs realized comparison
 # - some errors (i.e. wrong type?): shown in list form at end
+
+class ManualMemo:
+    def __init__(self, values, expected_types):
+        self.type_hints = dict(enumerate(expected_types))
+        self.arguments = dict(enumerate(values))
+
+import torch as ch
+import numpy as np
+
+def tensorcheck(args, expected_types):
+    def _massage_args(it, expected_types):
+        if isinstance(it, list) or isinstance(it, tuple):
+            assert len(expected_types) == len(it)
+            for k in expected_types:
+                assert isinstance(k, Tensor), f'expected type {k} (type {type(k)}) is not a Tensor'
+
+            return it, expected_types
+
+        elif ch.is_tensor(it) or isinstance(it, np.ndarray):
+            assert isinstance(expected_types, Tensor)
+            return [it], [expected_types]
+
+    args, expected_types = _massage_args(args, expected_types)
+    memo = ManualMemo(args, expected_types)
+    args_ok, processed = check_argument_types_and_generics(memo)
+    argnames, hints, realized, conversion_errors, generics = processed 
+    error_args = (argnames, generics, hints, realized, conversion_errors)
+    if not args_ok:
+        msg = error_msg(*error_args)
+        raise TensorMismatchError(msg)
+
+    return args_ok
 
 def tensorguard(func):
     def wrapper(*args, **kwargs):
