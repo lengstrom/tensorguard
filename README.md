@@ -32,7 +32,14 @@ inference(x, y)
 As a standalone assertion:
 ```python
 from tensorguard import tensorcheck
-tensorcheck(
+x = ch.randn(4, 4).to(dtype=ch.float32)
+x_expected = Tensor([4, 4])
+
+# check one at once
+tensorcheck(x, x_expected)
+
+# or multiple...
+tensorcheck([x, y], [x_expected, y_expected])
 ```
 
 ### Citation
