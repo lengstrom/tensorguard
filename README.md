@@ -43,7 +43,7 @@ tensorcheck(x, x_expected)
 tensorcheck([x, y], [x_expected, y_expected])
 ```
 
-### Citation
+<!-- ### Citation
 
 	@misc{engstrom2022tensorguard,
 		author = {Logan Engstrom},
@@ -51,7 +51,7 @@ tensorcheck([x, y], [x_expected, y_expected])
 		year = {2022},
 		howpublished = {\url{https://github.com/lengstrom/tensorguard/}}
 	}
-
+ -->
 ### Related work
 
 - We import typeguard (https://github.com/agronholm/typeguard) to extract the
