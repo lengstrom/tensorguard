@@ -1,6 +1,6 @@
 ## tensorguard
 
-Verbose tensor asserts for PyTorch and Numpy!
+Pretty runtime typechecking for PyTorch and Numpy tensors!
 
 <p align = 'center'>
 <img src = 'static/debug.png'>
@@ -30,9 +30,8 @@ Verbose tensor asserts for PyTorch and Numpy!
 
 - We import typeguard (https://github.com/agronholm/typeguard) to extract the
 mapping between arguments and hints/actual values 
-- Torchtyping https://github.com/patrick-kidger/torchtyping has more features and for now is probably more stable? but
-doesn't have very verbose outputs since it relies on tensorguard to do all the
-runtime type checking
+- Torchtyping https://github.com/patrick-kidger/torchtyping has more features and for now is probably more stable. However it doesn't have very nice outputs since it relies on tensorguard to do all the
+runtime type checking.
 
 
 ### TODOs:
