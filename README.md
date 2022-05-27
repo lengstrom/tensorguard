@@ -4,7 +4,7 @@ Easy + verbose tensor asserts for PyTorch and Numpy!
 
 <p align = 'center'>
 <!-- <img src = 'static/code.png'> -->
-<img src = 'static/vis.png'>
+<img src = 'static/debug.png'>
 </p>
 
 ### Install
