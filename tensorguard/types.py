@@ -25,12 +25,15 @@ HUMAN_TYPES, CH_TYPES, NP_TYPES = zip(*DTYPES)
 
 highlight_text = partial(colored, on_color='on_red', attrs=['underline', 'bold'])
 
+def _is_bad_generic(g, bad_set):
+    bad_typevar = type(g) is TypeVar and g.__name__ in bad_set
+    return bad_typevar
+
 def field_ok(a, b, bad_set=set()):
     eq = a == b 
     generic_eq = (type(a) == TypeVar) ^ (type(b) == TypeVar)
     none_eq = a is None or b is None # this means that one of them is wildcard
-
-    either_bad = (a in bad_set or b in bad_set)
+    either_bad = _is_bad_generic(a, bad_set) or _is_bad_generic(b, bad_set)
     return (eq or generic_eq or none_eq) and not either_bad
 
 class TensorTypeBase:
@@ -58,7 +61,8 @@ class TensorTypeScalar(TensorTypeBase):
 
     def rep_diff(self, a, bad_typevars):
         rep = self.__repr__()
-        if not self.type_matches(a) or a.value in bad_typevars:
+        bad_typevar = _is_bad_generic(a.value, bad_typevars)
+        if not self.type_matches(a) or bad_typevar:
             return highlight_text(rep)
 
         return rep
@@ -100,7 +104,7 @@ class TensorShape(TensorTypeBase):
                 else:
                     v = _BAD_GENERIC
 
-                generics[other_type].add(v)
+                generics[other_type.__name__].add(v)
 
     def rep_diff(self, a, bad_typevars: set):
         # get rep for diff between this and a, given which typevars are bad

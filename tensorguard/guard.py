@@ -47,8 +47,8 @@ def _error_msg(argnames, generics, hints, realized, conversion_errors, name):
     for expected, actual, tname in zip(hints, realized, argnames):
         hint_message = maybe_message(expected, actual, bad_generics)
         value_message = maybe_message(actual, expected, bad_generics)
-        value_messages.append(f'{underliner(tname)}: {(value_message)}')
-        hint_messages.append(f'{underliner(tname)}: {(hint_message)}')
+        value_messages.append(f'{underliner(tname)}: {value_message}')
+        hint_messages.append(f'{underliner(tname)}: {hint_message}')
 
     expected_line = ', '.join(hint_messages)
     actual_line = ', '.join(value_messages)
