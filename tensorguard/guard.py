@@ -1,12 +1,7 @@
 from functools import wraps, partial
-from pygments import highlight
 from termcolor import colored
 from collections import defaultdict
-from multiprocessing.sharedctypes import Value
-import sys
-from typing import NoReturn
 from tensorguard.types import Tensor
-
 from typeguard import _CallMemo
 
 class TensorMismatchError(Exception):

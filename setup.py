@@ -19,4 +19,4 @@ setup(name='tensorguard',
       packages=find_packages(),
       long_description=long_description,
       long_description_content_type='text/markdown',
-      install_requires=[])
+      install_requires=['typeguard', 'termcolor'])
