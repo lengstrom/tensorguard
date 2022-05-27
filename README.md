@@ -12,10 +12,28 @@ Pretty runtime typechecking for PyTorch and Numpy tensors!
 	pip install -e tensorguard
 
 ### Example usage
-<p align = 'center'>
-<img src = 'static/example.png'>
-</p>
+As a decorator:
+```python
+from tensorguard import tensorguard, Tensor as T
+import torch as ch
 
+@tensorguard
+def inference(x: T(['bs', 3, 224, 224], 'float16'), y: T(['bs', 'int64'])):
+    pass
+
+# make examples with wrong dtype
+x = ch.ones(128, 3, 224, 224, dtype=ch.float32)
+# make labels with wrong batch size
+y = ch.ones(256)
+
+inference(x, y)
+```
+
+As a standalone assertion:
+```python
+from tensorguard import tensorcheck
+tensorcheck(
+```
 
 ### Citation
 
@@ -30,7 +48,7 @@ Pretty runtime typechecking for PyTorch and Numpy tensors!
 
 - We import typeguard (https://github.com/agronholm/typeguard) to extract the
 mapping between arguments and hints/actual values 
-- Torchtyping https://github.com/patrick-kidger/torchtyping has more features and for now is probably more stable. However it doesn't have very nice outputs since it relies on tensorguard to do all the
+- Torchtyping (https://github.com/patrick-kidger/torchtyping) has more features and for now is probably more stable. However it doesn't have very nice outputs since it relies on tensorguard to do all the
 runtime type checking.
 
 
