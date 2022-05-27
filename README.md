@@ -26,6 +26,7 @@ x = ch.ones(128, 3, 224, 224, dtype=ch.float32)
 # make labels with wrong batch size
 y = ch.ones(256)
 
+# checks happen at runtime with @tensorguard decorator
 inference(x, y)
 ```
 
