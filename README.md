@@ -1,6 +1,7 @@
 ## tensorguard
 
-Pretty runtime typechecking for PyTorch and Numpy tensors!
+Pretty runtime typechecking for PyTorch and Numpy tensors! Formats and highlights
+tensor typechecking issues. 
 
 <p align = 'center'>
 <img src = 'static/debug.png'>
