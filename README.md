@@ -48,7 +48,7 @@ tensorcheck([x, y], [x_expected, y_expected])
 	@misc{engstrom2022tensorguard,
 		author = {Logan Engstrom},
 		title = {Tensorguard},
-		year = {2016},
+		year = {2022},
 		howpublished = {\url{https://github.com/lengstrom/tensorguard/}}
 	}
 
