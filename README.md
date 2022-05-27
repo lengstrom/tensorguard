@@ -1,6 +1,6 @@
 ## tensorguard
 
-Easy + verbose tensor asserts for PyTorch and Numpy!
+Verbose tensor asserts for PyTorch and Numpy!
 
 <p align = 'center'>
 <!-- <img src = 'static/code.png'> -->
@@ -8,6 +8,15 @@ Easy + verbose tensor asserts for PyTorch and Numpy!
 </p>
 
 ### Install
+
 	git clone git@github.com:lengstrom/tensorguard.git
 	pip install -e tensorguard
 
+### Citation
+
+	@misc{engstrom2022tensorguard,
+		author = {Logan Engstrom},
+		title = {Tensorguard},
+		year = {2016},
+		howpublished = {\url{https://github.com/lengstrom/tensorguard/}}
+	}
