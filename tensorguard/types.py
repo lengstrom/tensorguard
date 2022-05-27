@@ -12,7 +12,7 @@ DTYPES = [
     ('int8', ch.int8, np.int8),
     ('int16', ch.int16, np.int16),
     ('int32', ch.int32, np.int32),
-    ('int64', ch.int64, np.int64, int)
+    ('int64', ch.int64, np.int64)
 ]
 
 NAMES = {
