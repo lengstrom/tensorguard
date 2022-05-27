@@ -48,7 +48,7 @@ tensorcheck(
 
 - We import typeguard (https://github.com/agronholm/typeguard) to extract the
 mapping between arguments and hints/actual values 
-- Torchtyping https://github.com/patrick-kidger/torchtyping has more features and for now is probably more stable. However it doesn't have very nice outputs since it relies on tensorguard to do all the
+- Torchtyping (https://github.com/patrick-kidger/torchtyping) has more features and for now is probably more stable. However it doesn't have very nice outputs since it relies on tensorguard to do all the
 runtime type checking.
 
 
