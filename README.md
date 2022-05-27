@@ -7,9 +7,6 @@ Easy + verbose tensor asserts for PyTorch and Numpy!
 <img src = 'static/vis.png'>
 </p>
 
-<code>
-git clone git@github.com:lengstrom/tensorguard.git
-
-pip install -e tensorguard
-</code>
+	git clone git@github.com:lengstrom/tensorguard.git
+	pip install -e tensorguard
 
