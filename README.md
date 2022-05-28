@@ -18,7 +18,7 @@ from tensorguard import tensorguard, Tensor as T
 import torch as ch
 
 @tensorguard
-def inference(x: T(['bs', 3, 224, 224], 'float16'), y: T(['bs', 'int64'])):
+def inference(x: T(['bs', 3, 224, 224], 'float16'), y: T(['bs'], 'int64')):
     pass
 
 # make examples with wrong dtype
