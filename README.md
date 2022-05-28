@@ -41,11 +41,10 @@ tensorcheck(x, x_expected)
 
 # or multiple...
 tensorcheck([x, y], [x_expected, y_expected])
-
-# not specifying or setting to `None` a field yields a wildcard type
-# by default, every field is `None`
+```
+Not specifying or setting a field to `None` yields a wildcard type; by default, every field is `None`.
+```
 tensorcheck(x, Tensor([4, None], device=None))
-
 ```
 
 <!-- ### Citation
