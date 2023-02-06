@@ -30,7 +30,7 @@ def _is_bad_generic(g, bad_set):
     return bad_typevar
 
 def field_ok(a, b, bad_set=set()):
-    eq = a == b 
+    eq = a == b
     generic_eq = (type(a) == TypeVar) ^ (type(b) == TypeVar)
     none_eq = a is None or b is None # this means that one of them is wildcard
     either_bad = _is_bad_generic(a, bad_set) or _is_bad_generic(b, bad_set)
@@ -191,7 +191,7 @@ class DType(TensorTypeScalar):
     def make(cls, name):
         if name in NAMES:
             name = NAMES[name]
-        
+
         for str_name, ch_name, np_name in DTYPES:
             if name == str_name or name == ch_name or name == np_name:
                 return cls(dtype=ch_name)
@@ -220,7 +220,7 @@ class Tensor:
             device = v.device.type
         elif isinstance(v, np.ndarray):
             # make from a numpy array
-            shape = list(map(int, v.size))
+            shape = list(map(int, v.shape))
             library = 'numpy'
             device = 'cpu'
         else:
@@ -264,7 +264,7 @@ class Tensor:
 
         rep = Tensor.rep_func(d)
         return rep
- 
+
     def __repr__(self):
         rep = {
             'shape':self.shape,
@@ -290,7 +290,7 @@ class Tensor:
 
 # two kinds of comparisons:
 #  - vertical: does this match the original signature?
-#  - horizontal: do the 
+#  - horizontal: do the
 
 # def add_two_tensors(a: Tensor(['bs', 3, 224, 224], 'float32'), b: Tensor(['bs', 3, 224, 224], 'float32'))
 # Tensor([shape], 'uint8', 'cuda:0', 'numpy')
